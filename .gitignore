@@ -27,8 +27,6 @@ wheels/
 MANIFEST
 
 # PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
@@ -96,3 +94,45 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Data directories
+data/
+*.data
+*.dat
+
+# Model files
+*.model
+*.h5
+
+# Local configuration file
+.env.local
+
+# Log and result files
+*.log
+results/
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Other VCS
+.svn/
+.hg/
+.git/
+
+# Profiling data
+.prof
+
+# Backup & temp files
+*~
+*.bak
+*.swp
+*.tmp
+
+# datasets
+*.csv
