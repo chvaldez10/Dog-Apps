@@ -1,0 +1,10 @@
+torch
+numpy
+glob2
+matplotlib
+Pillow
+scikit-learn
+torchvision
+torchmetrics
+pytorch-lightning
+wandb
