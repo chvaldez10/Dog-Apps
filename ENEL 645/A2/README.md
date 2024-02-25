@@ -37,3 +37,11 @@ You can set up a virtual environment:
 conda create --name enel_645 python=3.11.7
 pip install -r requirements.txt
 ```
+
+### TALC
+
+We'll off sourcing our heavy duty tasks to TALC. If you're not connected to the UofC network, download FortiClient VPN.
+
+```bash
+ssh user.name@talc.ucalgary.ca
+```
