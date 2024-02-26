@@ -1,54 +1,71 @@
-import glob
+from glob import glob
 import numpy as np
 from sklearn.model_selection import StratifiedShuffleSplit
 # import torch
 # from torchvision import transforms
 
-def list_data_and_prepare_labels(images_path):
+def list_images(images_path: str) -> np.ndarray:
     """
-    List all images and prepare their labels.
+    List all images in the given path.
     """
-    images = glob.glob(images_path + "*/*.jpg")
-    images = np.array(images)
-    labels = np.array([f.split("/")[-2] for f in images])
+    images = glob(images_path, recursive=True)
+    return np.array(images)
 
-    # Convert string labels to integers
+def extract_labels(images: np.ndarray) -> tuple:
+    """
+    Extract labels from image paths.
+    """
+    labels = np.array([f.replace("\\", "/").split("/")[-2] for f in images])
     classes = np.unique(labels)
+    return labels, classes
+
+def convert_labels_to_int(labels: np.ndarray, classes: np.ndarray) -> np.ndarray:
+    """
+    Convert string labels to integers.
+    """
     label_to_int = {label: i for i, label in enumerate(classes)}
     labels_int = np.array([label_to_int[label] for label in labels])
+    return labels_int
 
+def list_data_and_prepare_labels(images_path: str) -> tuple:
+    """
+    List all images, extract labels, and prepare them for training.
+    """
+    images = list_images(images_path)
+    labels, classes = extract_labels(images)
+    labels_int = convert_labels_to_int(labels, classes)
     return images, labels_int, classes
 
-def split_data(images, labels, val_split, test_split):
-    """
-    Split data into train, validation, and test sets.
-    """
-    sss = StratifiedShuffleSplit(n_splits=1, test_size=test_split, random_state=10)
-    dev_index, test_index = next(sss.split(images, labels))
-    dev_images, dev_labels = images[dev_index], labels[dev_index]
-    test_images, test_labels = images[test_index], labels[test_index]
+# def split_data(images, labels, val_split, test_split):
+#     """
+#     Split data into train, validation, and test sets.
+#     """
+#     sss = StratifiedShuffleSplit(n_splits=1, test_size=test_split, random_state=10)
+#     dev_index, test_index = next(sss.split(images, labels))
+#     dev_images, dev_labels = images[dev_index], labels[dev_index]
+#     test_images, test_labels = images[test_index], labels[test_index]
 
-    val_size = int(val_split * len(images))
-    val_split_adjusted = val_size / len(dev_images)
-    sss2 = StratifiedShuffleSplit(n_splits=1, test_size=val_split_adjusted, random_state=10)
-    train_index, val_index = next(sss2.split(dev_images, dev_labels))
+#     val_size = int(val_split * len(images))
+#     val_split_adjusted = val_size / len(dev_images)
+#     sss2 = StratifiedShuffleSplit(n_splits=1, test_size=val_split_adjusted, random_state=10)
+#     train_index, val_index = next(sss2.split(dev_images, dev_labels))
 
-    return images[train_index], labels[train_index], images[val_index], labels[val_index], test_images, test_labels
+#     return images[train_index], labels[train_index], images[val_index], labels[val_index], test_images, test_labels
 
-def apply_transforms(mean_train=None, std_train=None):
-    """
-    Apply transformations to the datasets.
-    """
-    base_transform = [transforms.Resize((224, 224)), transforms.ToTensor()]
-    if mean_train is not None and std_train is not None:
-        normalize_transform = transforms.Normalize(mean=mean_train, std=std_train)
-        train_transform = transforms.Compose(base_transform + [transforms.RandomHorizontalFlip(), transforms.RandomVerticalFlip(), normalize_transform])
-        test_transform = transforms.Compose(base_transform + [normalize_transform])
-    else:
-        train_transform = transforms.Compose(base_transform + [transforms.RandomHorizontalFlip(), transforms.RandomVerticalFlip()])
-        test_transform = transforms.Compose(base_transform)
+# def apply_transforms(mean_train=None, std_train=None):
+#     """
+#     Apply transformations to the datasets.
+#     """
+#     base_transform = [transforms.Resize((224, 224)), transforms.ToTensor()]
+#     if mean_train is not None and std_train is not None:
+#         normalize_transform = transforms.Normalize(mean=mean_train, std=std_train)
+#         train_transform = transforms.Compose(base_transform + [transforms.RandomHorizontalFlip(), transforms.RandomVerticalFlip(), normalize_transform])
+#         test_transform = transforms.Compose(base_transform + [normalize_transform])
+#     else:
+#         train_transform = transforms.Compose(base_transform + [transforms.RandomHorizontalFlip(), transforms.RandomVerticalFlip()])
+#         test_transform = transforms.Compose(base_transform)
 
-    return train_transform, test_transform
+#     return train_transform, test_transform
 
 # def create_data_loaders(train_set, val_set, test_set, batch_size, train_transform, test_transform):
 #     """
