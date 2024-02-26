@@ -1,10 +1,8 @@
-torch
-numpy
-glob2
-matplotlib
-Pillow
-scikit-learn
-torchvision
-torchmetrics
-pytorch-lightning
 wandb
+torch
+torchvision
+Pillow
+numpy
+scikit-image
+scikit-learn
+matplotlib
