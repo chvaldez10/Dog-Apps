@@ -49,7 +49,7 @@ test_split = 0.2
 val_split = 0.2
 batch_size = 64
 
-#STEP 1 - LOAD DATASET
+# STEP 1 - LOAD DATASET
 images = glob.glob(data_url + "/**/*.png", recursive=True)
 images = np.array(images)
 labels = np.asarray([f.split("/")[-2] for f in images])

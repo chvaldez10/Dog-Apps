@@ -57,4 +57,5 @@ To manage our configurations, we'll be using a `.env` file. Create a `.env` file
 DATASET_LOCAL_PATH=
 DATASET_REMOTE_PATH=
 TALC_USER_LOGIN=
+MODEL_PATH
 ```
