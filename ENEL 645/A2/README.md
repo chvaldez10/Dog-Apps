@@ -18,8 +18,6 @@ Develop a PyTorch model to classify images of garbage. By participating in this 
 - Christian Valdez
 - Redge Santillan
 
-(Replace with your actual team members' names or nicknames!)
-
 ## Setup 🛠️
 
 ### Jupyter Setup
