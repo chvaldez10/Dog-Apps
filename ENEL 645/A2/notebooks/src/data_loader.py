@@ -36,21 +36,55 @@ def list_data_and_prepare_labels(images_path: str) -> tuple:
     labels_int = convert_labels_to_int(labels, classes)
     return images, labels_int, classes
 
-# def split_data(images, labels, val_split, test_split):
-#     """
-#     Split data into train, validation, and test sets.
-#     """
-#     sss = StratifiedShuffleSplit(n_splits=1, test_size=test_split, random_state=10)
-#     dev_index, test_index = next(sss.split(images, labels))
-#     dev_images, dev_labels = images[dev_index], labels[dev_index]
-#     test_images, test_labels = images[test_index], labels[test_index]
+def split_data(images: np.ndarray, labels: np.ndarray, val_split: float, test_split: float) -> tuple:
+    """
+    Split data into train, validation, and test sets.
+    """
+    # Splitting data into test and development sets
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=test_split, random_state=10)
+    dev_index, test_index = next(sss.split(images, labels))
+    dev_images, dev_labels = images[dev_index], labels[dev_index]
+    test_images, test_labels = images[test_index], labels[test_index]
 
-#     val_size = int(val_split * len(images))
-#     val_split_adjusted = val_size / len(dev_images)
-#     sss2 = StratifiedShuffleSplit(n_splits=1, test_size=val_split_adjusted, random_state=10)
-#     train_index, val_index = next(sss2.split(dev_images, dev_labels))
+    # Splitting development set into train and validation sets
+    val_size = int(val_split * len(images))
+    val_split_adjusted = val_size / len(dev_images)
+    sss2 = StratifiedShuffleSplit(n_splits=1, test_size=val_split_adjusted, random_state=10)
+    train_index, val_index = next(sss2.split(dev_images, dev_labels))
 
-#     return images[train_index], labels[train_index], images[val_index], labels[val_index], test_images, test_labels
+    # Returning the split data
+    train_images, train_labels = dev_images[train_index], dev_labels[train_index]
+    val_images, val_labels = dev_images[val_index], dev_labels[val_index]
+
+    return train_images, train_labels, val_images, val_labels, test_images, test_labels
+
+def split_data_to_dicts(images: np.ndarray, labels: np.ndarray, val_split: float, test_split: float, random_state: int = 10) -> dict:
+    """
+    Split data into train, validation, and test sets and return them as dictionaries.
+    """
+    # Splitting the data into dev and test sets
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=test_split, random_state=random_state)
+    dev_index, test_index = next(sss.split(images, labels))
+    dev_images, dev_labels = images[dev_index], labels[dev_index]
+    test_images, test_labels = images[test_index], labels[test_index]
+
+    # Splitting the data into train and val sets
+    val_size = int(val_split * len(images))
+    val_split_adjusted = val_size / len(dev_images)
+    sss2 = StratifiedShuffleSplit(n_splits=1, test_size=val_split_adjusted, random_state=random_state)
+    train_index, val_index = next(sss2.split(dev_images, dev_labels))
+
+    # Creating train, validation, and test dictionaries
+    train_images = images[train_index]
+    train_labels = labels[train_index]
+    val_images = images[val_index]
+    val_labels = labels[val_index]
+
+    train_set = {"X": train_images, "Y": train_labels}
+    val_set = {"X": val_images, "Y": val_labels}
+    test_set = {"X": test_images, "Y": test_labels}
+
+    return {"train": train_set, "val": val_set, "test": test_set}
 
 # def apply_transforms(mean_train=None, std_train=None):
 #     """
