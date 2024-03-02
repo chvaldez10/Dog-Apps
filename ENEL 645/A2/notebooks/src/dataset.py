@@ -1,6 +1,7 @@
 from PIL import Image
+from torch.utils.data import Dataset
 
-class BaseDataset:
+class BaseDataset(Dataset):
     def __init__(self, data_dic, transform=None):
         self.file_paths = data_dic["X"]
         self.labels = data_dic["Y"]
