@@ -6,3 +6,4 @@ numpy
 scikit-image
 scikit-learn
 matplotlib
+pytorch-lightning
