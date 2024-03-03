@@ -12,7 +12,7 @@ def test(model: GarbageModel, test_loader: BaseDataset, device: torch.device) ->
     total = 0
     with torch.no_grad():  # No gradient calculation for inference
         for images, labels in test_loader:
-            outputs = model(images) 
+            outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
