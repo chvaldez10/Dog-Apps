@@ -14,7 +14,7 @@ class GarbageModel(pl.LightningModule):
         self.num_classes = num_classes
         
         # transfer learning if pretrained=True
-        self.feature_extractor = models.resnet18(pretrained=transfer)
+        self.feature_extractor = models.resnet50(pretrained=transfer)
 
         if transfer:
             # layers are frozen by using eval()
@@ -23,10 +23,10 @@ class GarbageModel(pl.LightningModule):
             for param in self.feature_extractor.parameters():
                 param.requires_grad = False
 
-            self.classifier = nn.Linear(self.feature_extractor.fc.in_features, num_classes)
+        self.classifier = nn.Linear(self.feature_extractor.fc.in_features, num_classes)
 
-            self.criterion = nn.CrossEntropyLoss()
-            self.accuracy = Accuracy()
+        self.criterion = nn.CrossEntropyLoss()
+        # self.accuracy = Accuracy()
     
     # will be used during inference
     def forward(self, x):
