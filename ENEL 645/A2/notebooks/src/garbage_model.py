@@ -4,7 +4,7 @@ from torchmetrics import Accuracy
 from torchvision import transforms, models
 
 class GarbageModel(pl.LightningModule):
-    def __init__(self, input_shape, num_classes, learning_rate=2e-4, transfer=False):
+    def __init__(self, input_shape: tuple, num_classes: int, learning_rate: float = 2e-4, transfer: bool = False):
         super().__init__()
 
         # log hyperparameters

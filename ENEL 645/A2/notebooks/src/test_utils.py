@@ -1,7 +1,7 @@
 import torch
 
 # Custom class
-from src.dataset import BaseDataset
+from notebooks.src.base_dataset import BaseDataset
 from src.garbage_model import GarbageModel
 
 def test(model: GarbageModel, test_loader: BaseDataset, device: torch.device) -> None:
