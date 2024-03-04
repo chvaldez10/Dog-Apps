@@ -15,8 +15,8 @@ class BaseDataset(Dataset):
         label = self.labels[idx]
         file_path = self.file_paths[idx]
         
-        # Read an image with PIL
-        image = Image.open(file_path)
+        # Read an image with PIL and convert it to RGB
+        image = Image.open(file_path).convert('RGB')
 
         if self.transform:
             image = self.transform(image)
