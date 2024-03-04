@@ -18,7 +18,7 @@ from PIL import Image
 from torchvision.models import resnet18
 from torchvision import transforms, models
 from sklearn.model_selection import StratifiedShuffleSplit
-from google.colab import drive
+# from google.colab import drive
 # drive.mount('/content/drive')
 
 # Check if GPU is available
