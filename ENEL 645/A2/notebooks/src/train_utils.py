@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 
 # Custom class
-from notebooks.src.base_dataset import BaseDataset
+from src.base_dataset import BaseDataset
 from src.garbage_model import GarbageModel
 
 def train_validate(model: GarbageModel, train_loader: BaseDataset, val_loader: BaseDataset, epochs: int, learning_rate: float, best_model_path: str, device: torch.device, verbose: bool = True) -> None:
