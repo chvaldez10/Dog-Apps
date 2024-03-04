@@ -103,6 +103,7 @@ data/
 # Model files
 *.model
 *.h5
+*.pth
 
 # Local configuration file
 .env.local
