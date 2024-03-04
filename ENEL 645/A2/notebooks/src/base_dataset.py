@@ -1,7 +1,7 @@
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
-
+import torch
 class BaseDataset(Dataset):
     def __init__(self, data_dic: dict, transform: transforms.transforms.Compose = None):
         self.file_paths = data_dic["X"]
@@ -20,4 +20,8 @@ class BaseDataset(Dataset):
 
         if self.transform:
             image = self.transform(image)
+
+        # Convert label to a Long tensor
+        label = torch.tensor(label, dtype=torch.long)
+
         return image, label
