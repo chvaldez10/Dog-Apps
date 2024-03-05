@@ -1,9 +1,16 @@
 import torch.nn as nn
 import torch
+import wandb
 
 # Custom class
 from src.base_dataset import BaseDataset
 from src.garbage_model import GarbageModel
+
+wandb.init(
+    project="enel-645-garbage-classifier",
+    name="test-run",
+    config={"learning_rate": 0.02, "architecture": "resnet_18", "dataset": "CVPR_2024_dataset", "epochs": 12}
+)
 
 def train_validate(model: GarbageModel, train_loader: BaseDataset, val_loader: BaseDataset, epochs: int, learning_rate: float, best_model_path: str, device: torch.device, verbose: bool = True) -> None:
     model.to(device)
@@ -38,6 +45,9 @@ def train_validate(model: GarbageModel, train_loader: BaseDataset, val_loader: B
                 val_loss += loss.item()
             if verbose:
                 print(f'Val loss: {val_loss / len(val_loader):.3f}')
+
+        # Log training and validation loss to wandb
+        wandb.log({"epoch": epoch + 1, "train_loss": train_loss, "val_loss": val_loss})
 
         if val_loss < best_loss:
             if verbose:
