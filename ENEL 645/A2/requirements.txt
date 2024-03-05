@@ -1,4 +1,5 @@
 ipykernel
+load_dotenv
 wandb
 torch
 torchvision
