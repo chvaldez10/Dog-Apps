@@ -52,7 +52,8 @@ class BaseDataset(Dataset):
         return image, label
 
 data_url = '/work/TALC/enel645_2024w/CVPR_2024_dataset'
-model_path = '/home/alton.wong/645_assignment_2/garbage_net.pth'
+model_path = '/home/reoredge.santillan/645_assignment_2/garbage_net.pth'
+# model_path = '/home/alton.wong/645_assignment_2/garbage_net.pth' # Alton's
 epochs = 12
 test_split = 0.2
 val_split = 0.2
