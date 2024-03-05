@@ -1,8 +1,6 @@
 from glob import glob
 import numpy as np
 from sklearn.model_selection import StratifiedShuffleSplit
-# import torch
-# from torchvision import transforms
 
 def list_images(images_path: str) -> np.ndarray:
     """
