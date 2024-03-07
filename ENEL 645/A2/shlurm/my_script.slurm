@@ -10,6 +10,6 @@
 #SBATCH --gpus-per-node=1
 
 source ~/software/init-conda
-conda activate pytorch
+conda activate chris_env
 python "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/A2/notebooks/a2.py"
 conda deactivate
