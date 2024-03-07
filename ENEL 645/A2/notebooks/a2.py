@@ -253,6 +253,23 @@ def main_loop():
 
     train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
 
+    # Load the best model to be used in the test set
+    net = GarbageModel((3,224,224), 4, False)
+    net.load_state_dict(torch.load(best_model_path))
+
+    correct = 0
+    total = 0
+    # since we're not training, we don't need to calculate the gradients for our outputs
+    with torch.no_grad():
+        for data in test_loader:
+            images, labels = data
+            # calculate outputs by running images through the network
+            outputs = net(images)
+            # the class with the highest energy is what we choose as prediction
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
 # Main entry point
 if __name__ == "__main__":
     print("Starting the training")
