@@ -148,6 +148,11 @@ def split_data(images: np.ndarray, labels: np.ndarray, val_split: float, test_sp
     return {"Train": train_set, "Validation": val_set, "test": test_set}
 
 def train_validate(model: GarbageModel, train_loader: BaseDataset, val_loader: BaseDataset, epochs: int, learning_rate: float, best_model_path: str, device: torch.device, verbose: bool = True) -> None:
+    wandb.init(
+        project="enel-645-garbage-classifier",
+        name="test-run",
+        config={"learning_rate": 0.02, "architecture": "efficientNet_b4", "dataset": "CVPR_2024_dataset", "epochs": 12}
+    )
     model.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
@@ -245,12 +250,6 @@ def main_loop():
     efficientNet_b4 = GarbageModel(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES, transfer=True)
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     efficientNet_b4.to(device)
-
-    wandb.init(
-        project="enel-645-garbage-classifier",
-        name="test-run",
-        config={"learning_rate": 0.02, "architecture": "efficientNet_b4", "dataset": "CVPR_2024_dataset", "epochs": 12}
-    )
 
     train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
 
