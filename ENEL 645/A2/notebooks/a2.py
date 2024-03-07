@@ -207,7 +207,7 @@ def main_loop():
     None
     """
     # normalized_path = "/work/TALC/enel645_2024w/CVPR_2024_dataset"
-    normalized_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/A2/notebooks/small_dataset"
+    normalized_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/A2/small_dataset"
     best_model_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/A2/best_dataset/garbage_net.pth"
 
     images_path = normalized_path + "/**/*.png"
