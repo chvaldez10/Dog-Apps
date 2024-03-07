@@ -42,7 +42,8 @@ EPOCHS = 12
 LEARNING_RATE = 2e-4
 TEST_SPLIT = 0.2
 VAL_SPLIT = 0.2
-BATCH_SIZE = 8
+# BATCH_SIZE = 8
+BATCH_SIZE = 32
 NUM_CLASSES = 4 # Black, Blue, Green, or Other
 # INPUT_SHAPE = (3, 380, 224) # resnet18
 INPUT_SHAPE = (3, 380, 380)  # EfficientNet B4
@@ -262,9 +263,13 @@ test_dataset = BaseDataset(test_set,transform= torch_vision_transform_test)
 
 
 # Get data loaders
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
-val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
-test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
+# train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
+# val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
+# test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
+
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
 
 
 
