@@ -23,7 +23,7 @@ INPUT_SHAPE = (3, 380, 380)  # EfficientNet B4
 NUM_CLASSES = 4
 
 # Configure path to save the best model
-MODEL_PATH="/home/reoredge.santillan/645_assignment_2/best_dataset/garbage_net.pth"
+MODEL_PATH = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/A2/best_dataset/garbage_net.pth"
 
 # Function definitions and classes
 class GarbageModel(pl.LightningModule):
@@ -217,6 +217,26 @@ def evaluate_model(model, dataloader, device):
     
     return all_labels, all_predictions
 
+def calculate_accuracy(test_loader: BaseDataset, model) -> float:
+    """
+    Calculate accuracy.
+    """
+    correct = 0
+    total = 0
+    # since we're not training, we don't need to calculate the gradients for our outputs
+    with torch.no_grad():
+        for data in test_loader:
+            images, labels = data
+            # calculate outputs by running images through the network
+            outputs = model(images)
+            # the class with the highest energy is what we choose as prediction
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    
+    accuracy = correct / total
+    return accuracy
+
 
 # Main loop
 def main_loop():
@@ -273,11 +293,11 @@ def main_loop():
     # train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
 
     # Load the best model to be used in the test set
-    net = GarbageModel((3,224,224), 4, False)
-    net.load_state_dict(torch.load(best_model_path))
+    best_model = GarbageModel(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES, transfer=False)
+    best_model.load_state_dict(torch.load(best_model_path, map_location=torch.device('cpu')))
 
     # Evaluate the model on the test set
-    test_labels, test_predictions = evaluate_model(net, test_loader, device)
+    test_labels, test_predictions = evaluate_model(best_model, test_loader, device)
 
     # Print confusion matrix and classification report
     conf_matrix = confusion_matrix(test_labels, test_predictions)
@@ -289,22 +309,9 @@ def main_loop():
     print("\nClassification Report:")
     print(class_report)
 
-    correct = 0
-    total = 0
-    # since we're not training, we don't need to calculate the gradients for our outputs
-    with torch.no_grad():
-        for data in test_loader:
-            images, labels = data
-            # calculate outputs by running images through the network
-            outputs = net(images)
-            # the class with the highest energy is what we choose as prediction
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+    accuracy = calculate_accuracy(test_loader, best_model)
     
-    print(f'Accuracy of the network on the test images: {100 * correct / total} %')
-
-    print(f'Accuracy of the network on the test images: {100 * correct / total} %')
+    print(f"Accuracy of the network on the test images: {100 * accuracy} %.")
 
 # Main entry point
 if __name__ == "__main__":
