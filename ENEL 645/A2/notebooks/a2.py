@@ -228,8 +228,6 @@ def main_loop():
     """
     dataset_path = "/work/TALC/enel645_2024w/CVPR_2024_dataset"
     best_model_path = MODEL_PATH
-    normalized_path = "/work/TALC/enel645_2024w/CVPR_2024_dataset"
-    best_model_path = "/home/alton.wong/645_assignment_2/garbage_net.pth"
 
     images_path = dataset_path + "/**/*.png"
     images, labels_int, classes = list_data_and_prepare_labels(images_path)
