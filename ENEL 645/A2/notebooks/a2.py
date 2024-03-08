@@ -21,6 +21,9 @@ BATCH_SIZE = 32
 INPUT_SHAPE = (3, 380, 380)  # EfficientNet B4
 NUM_CLASSES = 4
 
+# Configure path to save the best model
+MODEL_PATH="/home/reoredge.santillan/645_assignment_2/best_dataset/garbage_net.pth"
+
 # Function definitions and classes
 class GarbageModel(pl.LightningModule):
     def __init__(self, input_shape: tuple, num_classes: int, learning_rate: float = 2e-4, transfer: bool = False):
@@ -206,10 +209,10 @@ def main_loop():
     Returns:
     None
     """
-    normalized_path = "/work/TALC/enel645_2024w/CVPR_2024_dataset"
-    best_model_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/A2/best_dataset/garbage_net.pth"
+    dataset_path = "/work/TALC/enel645_2024w/CVPR_2024_dataset"
+    best_model_path = MODEL_PATH
 
-    images_path = normalized_path + "/**/*.png"
+    images_path = dataset_path + "/**/*.png"
     images, labels_int, classes = list_data_and_prepare_labels(images_path)
     all_dataset = split_data(images, labels_int, VAL_SPLIT, TEST_SPLIT)
     train_set = all_dataset["Train"]
@@ -268,6 +271,8 @@ def main_loop():
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
+
+    print(f'Accuracy of the network on the test images: {100 * correct / total} %')
 
 # Main entry point
 if __name__ == "__main__":
