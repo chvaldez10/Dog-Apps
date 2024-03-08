@@ -11,6 +11,7 @@ from torchvision.models import resnet18, efficientnet_b4
 from torchvision import transforms, models
 import pytorch_lightning as pl
 from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.metrics import confusion_matrix, classification_report
 
 # Constants
 EPOCHS = 12
@@ -198,6 +199,22 @@ def train_validate(model: GarbageModel, train_loader: BaseDataset, val_loader: B
     if verbose:
         print('Finished Training')
 
+def evaluate_model(model, dataloader, device):
+    model.eval()
+    all_labels = []
+    all_predictions = []
+
+    with torch.no_grad():
+        for inputs, labels in dataloader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, predictions = torch.max(outputs, 1)
+            all_labels.extend(labels.cpu().numpy())
+            all_predictions.extend(predictions.cpu().numpy())
+    
+    return all_labels, all_predictions
+
+
 # Main loop
 def main_loop():
     """
@@ -207,7 +224,7 @@ def main_loop():
     None
     """
     normalized_path = "/work/TALC/enel645_2024w/CVPR_2024_dataset"
-    best_model_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/A2/best_dataset/garbage_net.pth"
+    best_model_path = "/home/alton.wong/645_assignment_2/garbage_net.pth"
 
     images_path = normalized_path + "/**/*.png"
     images, labels_int, classes = list_data_and_prepare_labels(images_path)
@@ -250,11 +267,24 @@ def main_loop():
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     efficientNet_b4.to(device)
 
-    train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
+    # train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
 
     # Load the best model to be used in the test set
     net = GarbageModel((3,224,224), 4, False)
     net.load_state_dict(torch.load(best_model_path))
+
+    # Evaluate the model on the test set
+    test_labels, test_predictions = evaluate_model(net, test_loader, device)
+
+    # Print confusion matrix and classification report
+    conf_matrix = confusion_matrix(test_labels, test_predictions)
+    class_report = classification_report(test_labels, test_predictions, target_names=classes)
+
+    print("Confusion Matrix:")
+    print(conf_matrix)
+
+    print("\nClassification Report:")
+    print(class_report)
 
     correct = 0
     total = 0
@@ -268,6 +298,8 @@ def main_loop():
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
+    
+    print(f'Accuracy of the network on the test images: {100 * correct / total} %')
 
 # Main entry point
 if __name__ == "__main__":
