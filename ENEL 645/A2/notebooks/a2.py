@@ -24,7 +24,7 @@ INPUT_SHAPE = (3, 380, 380)  # EfficientNet B4
 NUM_CLASSES = 4
 
 # Configure path to save the best model
-MODEL_PATH = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/A2/best_dataset/garbage_net.pth"
+MODEL_PATH = "<insert path>/garbage_net.pth"
 
 # Function definitions and classes
 class GarbageModel(pl.LightningModule):
@@ -166,7 +166,7 @@ def train_validate(model: GarbageModel, train_loader: BaseDataset, val_loader: B
         verbose=True,
         mode='min'
     )
-    
+
     wandb.init(
         project="enel-645-garbage-classifier",
         name="test-run",
@@ -289,7 +289,7 @@ def main_loop():
     None
     """
     # dataset_path = "/work/TALC/enel645_2024w/CVPR_2024_dataset"
-    dataset_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/A2/small_dataset"
+    dataset_path = "/work/TALC/enel645_2024w/CVPR_2024_dataset"
     best_model_path = MODEL_PATH
 
     images_path = dataset_path + "/**/*.png"
