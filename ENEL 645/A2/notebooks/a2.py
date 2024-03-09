@@ -8,6 +8,7 @@ import torch.nn as nn
 import numpy as np
 from PIL import Image
 from torchvision.models import resnet18, efficientnet_b4
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torchvision import transforms, models
 import pytorch_lightning as pl
 from sklearn.model_selection import StratifiedShuffleSplit
@@ -152,16 +153,28 @@ def split_data(images: np.ndarray, labels: np.ndarray, val_split: float, test_sp
     return {"Train": train_set, "Validation": val_set, "test": test_set}
 
 def train_validate(model: GarbageModel, train_loader: BaseDataset, val_loader: BaseDataset, epochs: int, learning_rate: float, best_model_path: str, device: torch.device, verbose: bool = True) -> None:
+    model.to(device)
+    criterion = nn.CrossEntropyLoss()
+    # optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=0.0001)
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+    best_loss = 1e+20
+
+    early_stop_callback = EarlyStopping(
+        monitor='val_loss',  # Monitor validation loss
+        patience=5,           # Number of consecutive epochs without improvement
+        verbose=True,
+        mode='min'
+    )
+    
     wandb.init(
         project="enel-645-garbage-classifier",
         name="test-run",
         config={"learning_rate": 0.02, "architecture": "efficientNet_b4", "dataset": "CVPR_2024_dataset", "epochs": 12}
     )
-    model.to(device)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
-    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
-    best_loss = 1e+20
+
+    # Initialize PyTorch Lightning Trainer
+    trainer = pl.Trainer(callbacks=[early_stop_callback]) if torch.cuda.is_available() else pl.Trainer()
 
     for epoch in range(epochs):
         model.train()
@@ -174,6 +187,7 @@ def train_validate(model: GarbageModel, train_loader: BaseDataset, val_loader: B
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
+
         if verbose:
             print(f'Epoch {epoch + 1}, Train loss: {train_loss / len(train_loader):.3f}', end=' ')
 
@@ -198,6 +212,14 @@ def train_validate(model: GarbageModel, train_loader: BaseDataset, val_loader: B
                 print("Saving model")
             torch.save(model.state_dict(), best_model_path)
             best_loss = val_loss
+
+        # Pass validation loss to EarlyStopping
+        trainer.should_stop = early_stop_callback.on_validation_end(trainer, model)
+
+        if trainer.should_stop:
+            if verbose:
+                print("Early stopping triggered.")
+            break
 
     if verbose:
         print('Finished Training')
@@ -251,9 +273,7 @@ def plot_confusion_matrix(cm, classes, title='Confusion matrix', cmap=plt.cm.Blu
 
     thresh = cm.max() / 2.
     for i, j in np.ndindex(cm.shape):
-        plt.text(j, i, cm[i, j],
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
+        plt.text(j, i, cm[i, j], horizontalalignment="center", color="white" if cm[i, j] > thresh else "black")
 
     plt.tight_layout()
     plt.ylabel('True label')
@@ -313,7 +333,7 @@ def main_loop():
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     efficientNet_b4.to(device)
 
-    # train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
+    train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
 
     # Load the best model to be used in the test set
     best_model = GarbageModel(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES, transfer=False)
