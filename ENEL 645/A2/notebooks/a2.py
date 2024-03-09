@@ -23,7 +23,7 @@ INPUT_SHAPE = (3, 380, 380)  # EfficientNet B4
 NUM_CLASSES = 4
 
 # Configure path to save the best model
-MODEL_PATH = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/A2/best_dataset/garbage_net.pth"
+MODEL_PATH = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/A2/best_dataset/garbage_net.pth"
 
 # Function definitions and classes
 class GarbageModel(pl.LightningModule):
@@ -237,6 +237,28 @@ def calculate_accuracy(test_loader: BaseDataset, model) -> float:
     accuracy = correct / total
     return accuracy
 
+def plot_confusion_matrix(cm, classes, title='Confusion matrix', cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    thresh = cm.max() / 2.
+    for i, j in np.ndindex(cm.shape):
+        plt.text(j, i, cm[i, j],
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.show()
 
 # Main loop
 def main_loop():
@@ -246,7 +268,8 @@ def main_loop():
     Returns:
     None
     """
-    dataset_path = "/work/TALC/enel645_2024w/CVPR_2024_dataset"
+    # dataset_path = "/work/TALC/enel645_2024w/CVPR_2024_dataset"
+    dataset_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/A2/small_dataset"
     best_model_path = MODEL_PATH
 
     images_path = dataset_path + "/**/*.png"
@@ -304,13 +327,12 @@ def main_loop():
     class_report = classification_report(test_labels, test_predictions, target_names=classes)
 
     print("Confusion Matrix:")
-    print(conf_matrix)
+    plot_confusion_matrix(conf_matrix, list(classes))
 
     print("\nClassification Report:")
     print(class_report)
 
     accuracy = calculate_accuracy(test_loader, best_model)
-    
     print(f"Accuracy of the network on the test images: {100 * accuracy} %.")
 
 # Main entry point
