@@ -337,7 +337,7 @@ def main_loop():
 
     # Load the best model to be used in the test set
     best_model = GarbageModel(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES, transfer=False)
-    best_model.load_state_dict(torch.load(best_model_path, map_location=torch.device())
+    best_model.load_state_dict(torch.load(best_model_path, map_location=torch.device()))
 
     # Evaluate the model on the test set
     test_labels, test_predictions = evaluate_model(best_model, test_loader, device)
