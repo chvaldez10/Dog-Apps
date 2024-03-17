@@ -55,7 +55,7 @@ INPUT_SIZE = (1, 3, 256, 256)
 # Variables
 DATASET_LOCAL_PATH="/Users/redge/Library/CloudStorage/OneDrive-UniversityofCalgary/School/MEng/Winter2024/enel645/ENSF-611-ENEL-645/ENEL 645/A2/small_dataset"
 DATASET_REMOTE_PATH="/work/TALC/enel645_2024w/CVPR_2024_dataset"
-REMOTE_MODEL_PATH="/home/reoredge.santillan/645_assignment_2/garbage_net.pth"
+REMOTE_MODEL_PATH="/home/reoredge.santillan/645_assignment_2/best_dataset/garbage_net.pth"
 LOCAL_MODEL_PATH="/Users/redge/Library/CloudStorage/OneDrive-UniversityofCalgary/School/MEng/Winter2024/enel645/ENSF-611-ENEL-645/ENEL 645/A2/best_dataset/garbage_net.pth"
 
 dataset_path = DATASET_REMOTE_PATH
