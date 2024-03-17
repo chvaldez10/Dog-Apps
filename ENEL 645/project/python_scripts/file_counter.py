@@ -6,6 +6,14 @@ import pandas as pd
 
 INPUT_DIR = "/Users/redge/Library/CloudStorage/OneDrive-UniversityofCalgary/School/MEng/Winter2024/enel645/my-645/645-project/tests/dataset-143-classes/"
 
+# Create the Train, Test, and Validation folders
+def create_folders():
+    folders = ["Train", "Test", "Validation"]
+
+    # Create each folder in the current directory
+    for folder in folders:
+        os.makedirs(folder, exist_ok=True)
+
 def count_files_in_directory(input_directory):
     folder_counts = {}
 
@@ -27,6 +35,8 @@ def create_dataframe(folder_counts):
 # Input directory path
 input_directory = INPUT_DIR
 
+create_folders()
+
 # Count the files in the directory
 folder_counts = count_files_in_directory(input_directory)
 
@@ -34,9 +44,9 @@ folder_counts = count_files_in_directory(input_directory)
 df = create_dataframe(folder_counts)
 df.sort_values(by='Folder', inplace=True)
 
-# Display the DataFrame
-display(df)
-print(df.describe())
+# # Display the DataFrame
+# display(df)
+# print(df.describe())
 
-cell_value = df[df['File Count'] > 50]
-print(cell_value)
+# cell_value = df[df['File Count'] > 50]
+# print(cell_value)
