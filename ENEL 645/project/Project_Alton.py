@@ -18,7 +18,7 @@ import os
 from torchvision import datasets
 
 # Constants
-EPOCHS = 12
+EPOCHS = 35
 LEARNING_RATE = 2e-4
 # TRAIN_SPLIT = 0.7
 # TEST_SPLIT = 0.2
@@ -189,7 +189,7 @@ def train_validate(model: GarbageModel, train_loader: BaseDataset, val_loader: B
     wandb.init(
         project="enel-645-garbage-classifier",
         name="test-run",
-        config={"learning_rate": 0.02, "architecture": "efficientNet_b4", "dataset": "CVPR_2024_dataset", "epochs": 12}
+        config={"learning_rate": 0.02, "architecture": "efficientNet_b4", "dataset": "dataset-143-classes", "epochs": EPOCHS}
     )
 
     # Initialize PyTorch Lightning Trainer
@@ -396,7 +396,7 @@ def main_loop():
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     efficientNet_b4.to(device)
 
-    # train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
+    train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
 
     # Load the best model to be used in the test set
     best_model = GarbageModel(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES, transfer=False)
