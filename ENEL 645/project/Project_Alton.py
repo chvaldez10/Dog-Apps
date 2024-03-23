@@ -258,7 +258,7 @@ def evaluate_model(model, dataloader, device):
     
     return all_labels, all_predictions
 
-def calculate_accuracy(test_loader: BaseDataset, model) -> float:
+# def calculate_accuracy(test_loader: BaseDataset, model) -> float:
     """
     Calculate accuracy.
     """
@@ -278,11 +278,38 @@ def calculate_accuracy(test_loader: BaseDataset, model) -> float:
     accuracy = correct / total
     return accuracy
 
-def plot_confusion_matrix(cm, classes, title='Confusion matrix', cmap=plt.cm.Blues):
+def calculate_accuracy(test_loader: torch.utils.data.DataLoader, model: torch.nn.Module, device: torch.device) -> float:
+    """
+    Calculate the accuracy of a model on a given dataset.
+
+    Parameters:
+    - test_loader: DataLoader for the dataset to evaluate.
+    - model: The model to evaluate.
+    - device: The device to perform the evaluation on.
+
+    Returns:
+    - The accuracy of the model on the dataset.
+    """
+    model.eval()  # Set the model to evaluation mode.
+    correct = 0
+    total = 0
+    with torch.no_grad():  # No need to track gradients
+        for images, labels in test_loader:
+            images, labels = images.to(device), labels.to(device)  # Move data to the correct device.
+            outputs = model(images)
+            _, predicted = torch.max(outputs, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    
+    accuracy = correct / total
+    return accuracy
+
+def plot_confusion_matrix(cm, classes, title='Confusion matrix', cmap=plt.cm.Blues, save_path='/home/alton.wong/645_project/confusion_matrix.png'):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
+    plt.figure(figsize=(100, 100))  # Increase figure size
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
@@ -297,6 +324,7 @@ def plot_confusion_matrix(cm, classes, title='Confusion matrix', cmap=plt.cm.Blu
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+    plt.savefig(save_path)
     plt.show()
 
 # Main loop
@@ -368,11 +396,12 @@ def main_loop():
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     efficientNet_b4.to(device)
 
-    train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
+    # train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
 
     # Load the best model to be used in the test set
     best_model = GarbageModel(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES, transfer=False)
-    best_model.load_state_dict(torch.load(best_model_path, map_location=torch.device()))
+    best_model.load_state_dict(torch.load(best_model_path, map_location=device))
+    best_model = best_model.to(device)
 
     # Evaluate the model on the test set
     test_labels, test_predictions = evaluate_model(best_model, test_loader, device)
@@ -383,11 +412,13 @@ def main_loop():
 
     print("Confusion Matrix:")
     plot_confusion_matrix(conf_matrix, list(classes))
+    print(conf_matrix)
 
     print("\nClassification Report:")
     print(class_report)
 
-    accuracy = calculate_accuracy(test_loader, best_model)
+    # accuracy = calculate_accuracy(test_loader, best_model)
+    accuracy = calculate_accuracy(test_loader, best_model, device)
     print(f"Accuracy of the network on the test images: {100 * accuracy} %.")
 
 # Main entry point
