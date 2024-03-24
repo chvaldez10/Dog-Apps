@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 import torch.nn as nn
 import numpy as np
 from PIL import Image
-from torchvision.models import resnet18, efficientnet_b4
+from torchvision.models import resnet18, efficientnet_b4, inception_v3
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torchvision import transforms, models
 import pytorch_lightning as pl
@@ -17,6 +17,7 @@ from torchvision.datasets import ImageFolder
 import os
 from torchvision import datasets
 
+
 # Constants
 EPOCHS = 35
 LEARNING_RATE = 2e-4
@@ -24,15 +25,15 @@ LEARNING_RATE = 2e-4
 # TEST_SPLIT = 0.2
 # VAL_SPLIT = 0.1
 BATCH_SIZE = 32
-INPUT_SHAPE = (3, 380, 380)  # EfficientNet B4
+INPUT_SHAPE = (3, 299, 299)  # inception_V3
 NUM_CLASSES = 142
 
 # Configure path to save the best model
 # MODEL_PATH = "<MODEL PATH>/garbage_net.pth"
-MODEL_PATH = "/home/alton.wong/645_project/garbage_net.pth"
+MODEL_PATH = "/home/alton.wong/645_project/garbage_net_inceptionV3.pth"
 
 # Function definitions and classes
-class DogModel(pl.LightningModule):
+class GarbageModel(pl.LightningModule):
     def __init__(self, input_shape: tuple, num_classes: int, learning_rate: float = 2e-4, transfer: bool = False):
         super().__init__()
 
@@ -44,7 +45,8 @@ class DogModel(pl.LightningModule):
         self.num_classes = num_classes
         
         # transfer learning if pretrained=True
-        self.feature_extractor = models.efficientnet_b4(pretrained=transfer)
+        self.feature_extractor = models.inception_v3(pretrained=transfer, init_weights =not transfer) 
+        self.feature_extractor.aux_logits = False
 
         if transfer:
             # layers are frozen by using eval()
@@ -53,8 +55,9 @@ class DogModel(pl.LightningModule):
             for param in self.feature_extractor.parameters():
                 param.requires_grad = False
 
-        n_features = self._get_conv_output(self.input_shape)
-        self.classifier = nn.Linear(n_features, num_classes)
+        # n_features = self._get_conv_output(self.input_shape)
+        # Assuming the final features before the fully connected layer have a size of 2048 for InceptionV3
+        self.feature_extractor.fc = nn.Linear(self.feature_extractor.fc.in_features, num_classes)
         self.criterion = nn.CrossEntropyLoss()
     
     def _get_conv_output(self, shape):
@@ -68,10 +71,9 @@ class DogModel(pl.LightningModule):
     # will be used during inference
     def forward(self, x):
         x = self.feature_extractor(x)
-        x = x.view(x.size(0), -1)
-        x = self.classifier(x)
-
+    
         return x
+
 
 class BaseDataset(Dataset):
     def __init__(self, data_dic: dict, transform: transforms.transforms.Compose = None):
@@ -171,7 +173,7 @@ def create_dataset_from_folder(path: str, transform: transforms.Compose) -> torc
     dataset = ImageFolder(root=path, transform=transform)
     return dataset
 
-def train_validate(model: DogModel, train_loader: BaseDataset, val_loader: BaseDataset, epochs: int, learning_rate: float, best_model_path: str, device: torch.device, verbose: bool = True) -> None:
+def train_validate(model: GarbageModel, train_loader: BaseDataset, val_loader: BaseDataset, epochs: int, learning_rate: float, best_model_path: str, device: torch.device, verbose: bool = True) -> None:
     model.to(device)
     criterion = nn.CrossEntropyLoss()
     # optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
@@ -187,9 +189,9 @@ def train_validate(model: DogModel, train_loader: BaseDataset, val_loader: BaseD
     )
 
     wandb.init(
-        project="enel-645-garbage-classifier",
+        project="645-project",
         name="test-run",
-        config={"learning_rate": 0.02, "architecture": "efficientNet_b4", "dataset": "dataset-143-classes", "epochs": EPOCHS}
+        config={"learning_rate": 0.02, "architecture": "inception_v3", "dataset": "dataset-143-classes", "epochs": EPOCHS}
     )
 
     # Initialize PyTorch Lightning Trainer
@@ -350,23 +352,27 @@ def main_loop():
     # test_set = all_dataset["test"]
 
     torch_vision_transform_train = transforms.Compose([
-        transforms.Resize((380, 380)),
+        transforms.Resize((299, 299)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(
-            mean=[0.4120, 0.3768, 0.3407],
-            std=[0.2944, 0.2759, 0.2598],
+            # mean=[0.4120, 0.3768, 0.3407],
+            # std=[0.2944, 0.2759, 0.2598],
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229,0.224,0.225],
         )
     ])
 
     torch_vision_transform_val_test = transforms.Compose([
         # transforms.Resize((224, 224)), #resnet18
-        transforms.Resize((380, 380)),
+        transforms.Resize((299, 299)),
         transforms.ToTensor(),
         transforms.Normalize(
-            mean=[0.4120, 0.3768, 0.3407],
-            std=[0.2944, 0.2759, 0.2598],
+            # mean=[0.4120, 0.3768, 0.3407],
+            # std=[0.2944, 0.2759, 0.2598],
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229,0.224,0.225],
         )
     ])
 
@@ -392,14 +398,14 @@ def main_loop():
     # val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
     # test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
 
-    efficientNet_b4 = DogModel(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES, transfer=True)
+    inception_v3 = GarbageModel(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES, transfer=True)
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    efficientNet_b4.to(device)
+    inception_v3.to(device)
 
-    train_validate(efficientNet_b4, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
+    train_validate(inception_v3, train_loader, val_loader, EPOCHS, LEARNING_RATE, best_model_path, device)
 
     # Load the best model to be used in the test set
-    best_model = DogModel(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES, transfer=False)
+    best_model = GarbageModel(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES, transfer=False)
     best_model.load_state_dict(torch.load(best_model_path, map_location=device))
     best_model = best_model.to(device)
 
