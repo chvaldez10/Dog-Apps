@@ -8,7 +8,7 @@ source ~/software/init-conda
 
 ## 2. Create New Conda Environment 🌱
 ```
-conda create -n <your env name>
+conda create -n <your env name> python=3.11.8 ipython
 ```
 
 ## 3. Activate Newly Created Conda Environment 🔁
@@ -21,5 +21,5 @@ conda activate <your env name>
 Install the main packages needed for deep learning with PyTorch, along with some essential libraries for data processing and visualization.
 ```
 conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia 
-conda install ipykernel wandb Pillow numpy scikit-image scikit-learn matplotlib pytorch-lightning
+pip install ipykernel wandb Pillow numpy scikit-image scikit-learn matplotlib pytorch-lightning
 ```
