@@ -11,7 +11,13 @@ source ~/software/init-conda
 conda create -n <your env name>
 ```
 
-## 3. Install Conda Packages 📦
+## 3. Activate Newly Created Conda Environment 🔁
+Activate the newly created Conda environment to use it for the installation of packages.
+```
+conda activate <your env name>
+```
+
+## 4. Install Conda Packages 📦
 Install the main packages needed for deep learning with PyTorch, along with some essential libraries for data processing and visualization.
 ```
 conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia 
