@@ -245,10 +245,15 @@ def train_validate(model: nn.Module, train_loader: DataLoader, val_loader: DataL
 def main(args):
     print("🚀 Starting Main Function...")
 
-    # Paths to the dataset
-    dataset_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/small_dataset/"
-    model_save_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/best_model/model.pth"
-    print("📂 Dataset and Model paths are set!")
+    # Paths to the dataset (could be in .env file but its okay)
+    if args.local:
+        dataset_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/small_dataset/"
+        model_save_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/best_model/resnet_50.pth"
+        print("📂 Dataset and Model paths are set!")
+    else:
+        dataset_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/project/small_dataset/"
+        model_save_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/project/best_model/resnet_50.pth"
+        print("📂 Dataset and Model paths are set!")
 
     # Initialize dataset and loader
     train_loader, val_loader, test_loader = initialize_dataset_and_loader(dataset_path, True)
@@ -283,6 +288,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train and/or test model.")
     parser.add_argument("--train", action="store_true", help="Train the model")
     parser.add_argument("--test", action="store_true", help="Test the model")
+    parser.add_argument("--local", action="store_true", help="Check if using local computer")
     args = parser.parse_args()
 
     # Call the main function with parsed arguments
