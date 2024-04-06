@@ -251,7 +251,7 @@ def main(args):
         model_save_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/best_model/resnet_50.pth"
         print("📂 Dataset and Model paths are set!")
     else:
-        dataset_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/project/small_dataset/"
+        dataset_path = "/work/TALC/enel645_2024w/group24/dataset-143-classes/"
         model_save_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/project/best_model/resnet_50.pth"
         print("📂 Dataset and Model paths are set!")
 
