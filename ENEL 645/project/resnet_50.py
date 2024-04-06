@@ -96,15 +96,14 @@ class DogBreedClassifier(pl.LightningModule):
         loss = F.cross_entropy(outputs, labels)
 
         # Calculate and log training accuracy
-        preds = torch.argmax(outputs, dim=1)
-        self.train_accuracy.update(preds, labels)
+        predictions = torch.argmax(outputs, dim=1)
+        self.train_accuracy.update(predictions, labels)
         self.log("train_loss", loss)
         self.log("train_acc", self.train_accuracy, on_step=False, on_epoch=True, prog_bar=True)
 
         return loss
     
     def on_train_epoch_end(self):
-        # Optionally, log the train accuracy here if needed and then reset
         self.log("train_acc_epoch", self.train_accuracy.compute(), prog_bar=True)
         self.train_accuracy.reset()
 
@@ -113,15 +112,14 @@ class DogBreedClassifier(pl.LightningModule):
         outputs = self(images)
         loss = F.cross_entropy(outputs, labels)
 
-        preds = torch.argmax(outputs, dim=1)
-        self.val_accuracy.update(preds, labels)
+        predictions = torch.argmax(outputs, dim=1)
+        self.val_accuracy.update(predictions, labels)
         self.log('val_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         self.log('val_acc', self.val_accuracy, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
         return loss
 
     def configure_optimizers(self):
-        # Configure optimizers and optionally learning rate schedulers
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
         return optimizer
 
@@ -163,7 +161,7 @@ class DogDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path = self.file_paths[idx]
-        image = Image.open(img_path).convert("RGB")  # Convert image to RGB
+        image = Image.open(img_path).convert("RGB")
         label = self.labels[idx]  
 
         # Convert label string to integer index
@@ -188,7 +186,9 @@ class DogBreedDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
 
     def setup(self, stage=None):
-        # Initialize datasets for training, validation, and testing
+        """
+        Initialize datasets for training, validation, and testing
+        """
         self.train_dataset = DogDataset(self.dataset_path, "Train", CUSTOM_TRANSFORM["Train"])
         self.val_dataset = DogDataset(self.dataset_path, "Validation", CUSTOM_TRANSFORM["Validation"])
         self.test_dataset = DogDataset(self.dataset_path, "Test", CUSTOM_TRANSFORM["Test"])
@@ -242,13 +242,13 @@ def train_dog_breed_classifier(dataset_path: str, save_model_path: str, project_
     model = DogBreedClassifier()
     data_module = DogBreedDataModule(dataset_path=dataset_path, batch_size=batch_size)
 
-    # Setup model checkpointing
+    # Setup model checkpoints
     model_checkpoint = ModelCheckpoint(
         dirpath=save_model_path,
         filename="best-model-{epoch:02d}-{val_acc:.2f}",
-        monitor="val_acc",  # Now monitoring validation accuracy
+        monitor="val_acc",  # Saving model with highest val accuracy
         save_top_k=1,
-        mode="max",  # Changed to 'max' because higher accuracy is better
+        mode="max",
         verbose=True
     )
 
@@ -271,7 +271,6 @@ def train_dog_breed_classifier(dataset_path: str, save_model_path: str, project_
     # Train the model
     trainer.fit(model, datamodule=data_module)
 
-    # Optionally, close the wandb run when training is done
     wandb_logger.experiment.finish()
 
 # -------------------------------------------------------------------------------- #
@@ -305,8 +304,7 @@ def main(args):
     if args.test:
         print("🔍 Running tests...")
         # Testing logic here
-        # print(f"📊 Test Loss: {test_loss}. Test Accuracy: {test_accuracy}")
-        # print("✅ Testing completed!")
+        print("✅ Testing completed!")
 
     print("🎉 Main Function Execution Completed Successfully!")
 
@@ -316,6 +314,4 @@ if __name__ == "__main__":
     parser.add_argument("--test", action="store_true", help="Test the model")
     parser.add_argument("--local", action="store_true", help="Check if using local computer")
     args = parser.parse_args()
-
-    # Call the main function with parsed arguments
     main(args)
