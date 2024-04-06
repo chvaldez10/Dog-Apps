@@ -35,7 +35,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, datasets
 import torch.optim as optim
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from itertools import product
 from PIL import Image
 import random
@@ -49,33 +49,48 @@ import wandb
 DATASET_SEGMENTS = ["Train", "Test", "Validation"]
 
 class DogDataset(Dataset):
-    def __init__(self, data_dir: str, data_transforms: transforms.Compose, dataset_type: List[str]) -> None:
+    def __init__(self, root_dir: str, dataset_type: str, transforms=None,) -> None:
         """
         Initialize the DogDataset.
         
         Parameters:
-        - data_dir (str): The base directory of the dataset.
-        - data_transforms (dict): A dictionary containing transformations for each dataset type.
+        - root_dir (str): The base directory of the dataset.
         - dataset_type (str): Type of the dataset. Must be "Train", "Test", or "Validation".
+        - transforms: Transformations to be applied on the dataset.
         """
-        if dataset_type not in DATASET_SEGMENTS:
-            raise ValueError("dataset_type must be", DATASET_SEGMENTS)
-            
-        self.data_dir = data_dir
-        self.transforms = data_transforms[dataset_type]
-        self.dataset = datasets.ImageFolder(os.path.join(data_dir, dataset_type), self.transforms)
+        self.root_dir = os.path.join(root_dir, dataset_type)
+        self.transforms = transforms
+        self.file_paths = []
+        self.labels = []
+        self._generate_sample()
+
+    def _generate_sample(self):
+        for label in os.listdir(self.root_dir):
+            label_dir = os.path.join(self.root_dir, label)
+            if os.path.isdir(label_dir):
+                for file_name in os.listdir(label_dir):
+                    if file_name.endswith(".jpg"):
+                        self.file_paths.append(os.path.join(label_dir, file_name))
+                        self.labels.append(label)
 
     def __len__(self):
-        return len(self.dataset)
+        return len(self.file_paths)
 
     def __getitem__(self, idx):
-        return self.dataset[idx]
+        img_path = self.file_paths[idx]
+        image = Image.open(img_path).convert("RGB")  # Convert image to RGB
+        label = self.labels[idx]
 
-def initialize_dataset_and_loader(dataset_path: str) -> Tuple[DataLoader, DataLoader, DataLoader]:
+        if self.transforms:
+            image = self.transforms(image)
+
+        return image, label
+
+def get_data_transforms() -> Dict[str, transforms.Compose]:
     """
-    Initializes the dataset and data loaders for training, validation, and testing.
+    Returns the data transformations for each dataset type.
     """
-    data_transforms = {
+    return {
         "Train": transforms.Compose([
             transforms.RandomResizedCrop(299),
             transforms.RandomHorizontalFlip(),
@@ -95,9 +110,18 @@ def initialize_dataset_and_loader(dataset_path: str) -> Tuple[DataLoader, DataLo
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     }
+
+def initialize_dataset_and_loader(dataset_path: str) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    """
+    Initializes the dataset and data loaders for training, validation, and testing.
+    """
+    data_transforms = get_data_transforms()
     
-    dog_dataset = {x: DogDataset(dataset_path, data_transforms, x) for x in DATASET_SEGMENTS}
-    train_dataset = dog_dataset["Train"]
+    train_dataset = DogDataset(dataset_path, "Train", data_transforms["Train"])
+
+    print(train_dataset.file_paths[0])
+    print(train_dataset.labels[0])
+    print(train_dataset[0])
 
     # return train_loader, val_loader, test_loader
 
