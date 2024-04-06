@@ -1,5 +1,5 @@
 """
-This script is designed for training and testing a 3D Convolutional Neural Network (CNN) model
+This script is designed for training and testing a <some> model
 for image recognition tasks.
 
 Command-Line Options:
@@ -32,7 +32,7 @@ import re
 import torch
 import argparse
 from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms, datasets
+from torchvision import transforms
 import torch.optim as optim
 import os
 from typing import List, Tuple, Dict
@@ -41,13 +41,34 @@ from PIL import Image
 from datetime import datetime
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.optim import lr_scheduler
 import wandb
 
 # Constants
 DATASET_SEGMENTS = ["Train", "Test", "Validation"]
 BATCH_SIZE = 32
 NUM_WORKERS = 4
+
+CUSTOM_TRANSFORM = {
+        "Train": transforms.Compose([
+            transforms.RandomResizedCrop(299),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]),
+        "Test": transforms.Compose([
+            transforms.Resize(299),
+            transforms.CenterCrop(299),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]),
+        "Validation": transforms.Compose([
+            transforms.Resize(299),
+            transforms.CenterCrop(299),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]),
+    }
+
 class DogDataset(Dataset):
     def __init__(self, root_dir: str, dataset_type: str, transforms=None,) -> None:
         """
@@ -70,7 +91,7 @@ class DogDataset(Dataset):
             if os.path.isdir(label_dir):
                 for file_name in os.listdir(label_dir):
                     if file_name.endswith(".jpg"):
-                        self.file_paths.append(os.path.join(label_dir, file_name))
+                        self.file_paths.append(os.path.normpath(os.path.join(label_dir, file_name)))
                         self.labels.append(label)
 
     def __len__(self):
@@ -88,7 +109,7 @@ class DogDataset(Dataset):
 
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
-    def __init__(self, patience=5, verbose=False, delta=0, path='checkpoint.pt', trace_func=print):
+    def __init__(self, patience:int=5, verbose:bool=False, delta:float=0, path:str='checkpoint.pt', trace_func=print):
         """
         Initialize EarlyStopping
         """
@@ -110,7 +131,7 @@ class EarlyStopping:
             self.save_checkpoint(val_loss, model)
         elif score < self.best_score + self.delta:
             self.counter += 1
-            self.trace_func(f'EarlyStopping counter: {self.counter} out of {self.patience}')
+            self.trace_func(f"EarlyStopping counter: {self.counter} out of {self.patience}")
             if self.counter >= self.patience:
                 self.early_stop = True
         else:
@@ -119,52 +140,52 @@ class EarlyStopping:
             self.counter = 0
 
     def save_checkpoint(self, val_loss, model):
-        """Saves model when validation loss decrease."""
+        """
+        Saves model when validation loss decrease.
+        """
         if self.verbose:
-            self.trace_func(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
+            self.trace_func(f"Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...")
         torch.save(model.state_dict(), self.path)
         self.val_loss_min = val_loss
 
-def get_data_transforms() -> Dict[str, transforms.Compose]:
-    """
-    Returns the data transformations for each dataset type.
-    """
-    return {
-        "Train": transforms.Compose([
-            transforms.RandomResizedCrop(299),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-        "Test": transforms.Compose([
-            transforms.Resize(299),
-            transforms.CenterCrop(299),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-        "Validation": transforms.Compose([
-            transforms.Resize(299),
-            transforms.CenterCrop(299),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-    }
-
-def initialize_dataset_and_loader(dataset_path: str) -> Tuple[DataLoader, DataLoader, DataLoader]:
+def initialize_dataset_and_loader(dataset_path: str, verbose: bool = False) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
     Initializes the dataset and data loaders for training, validation, and testing.
     """
-    data_transforms = get_data_transforms()
-    
-    # custom dataset
-    train_dataset = DogDataset(dataset_path, "Train", data_transforms["Train"])
-    test_dataset = DogDataset(dataset_path, "Test", data_transforms["Test"])
-    val_dataset = DogDataset(dataset_path, "Validation", data_transforms["Validation"])
+    if verbose:
+        print("✨ Verbose Mode: ON ✨\n")
+        print("🔍 Loading dataset...")
+        print("=" * 60)
 
-    # dataset loader
+    # Custom dataset
+    train_dataset = DogDataset(dataset_path, "Train", CUSTOM_TRANSFORM["Train"])
+    test_dataset = DogDataset(dataset_path, "Test", CUSTOM_TRANSFORM["Test"])
+    val_dataset = DogDataset(dataset_path, "Validation", CUSTOM_TRANSFORM["Validation"])
+
+    if verbose:
+        print("🐶 Training Dataset Initialized! First Peek:")
+        print("   🏷️ Label: ", train_dataset.labels[0])
+        print("   📂 File Path: ", train_dataset.file_paths[0])
+        print("   " + "-" * 58)
+
+        print("🧪 Testing and Validation Datasets Initialized!")
+        print("   🐾 Total Training Samples: ", len(train_dataset))
+        print("   🐾 Total Testing Samples: ", len(test_dataset))
+        print("   🐾 Total Validation Samples: ", len(val_dataset))
+        print("   " + "-" * 58)
+
+    # Dataset loader
     train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
     test_loader = DataLoader(dataset=test_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
     val_loader = DataLoader(dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
+
+    if verbose:
+        print("🔄 Data Loaders Ready for Action!")
+        print("   🚂 Training Loader:    Batches Ready")
+        print("   🚂 Testing Loader:     Batches Ready")
+        print("   🚂 Validation Loader:  Batches Ready")
+        print("=" * 60)
+        print("🚀 Dataset and Loaders are fully initialized and ready!")
 
     return train_loader, val_loader, test_loader
 
@@ -222,35 +243,40 @@ def train_validate(model: nn.Module, train_loader: DataLoader, val_loader: DataL
 # -------------------------------------------------------------------------------- #
 
 def main(args):
-    # Define transformations
-    transform = transforms.Compose([
-        transforms.Resize((180, 320)),
-        transforms.ToTensor(),
-    ])
+    print("🚀 Starting Main Function...")
 
     # Paths to the dataset
     dataset_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/small_dataset/"
     model_save_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/best_model/model.pth"
+    print("📂 Dataset and Model paths are set!")
 
     # Initialize dataset and loader
-    initialize_dataset_and_loader(dataset_path)
-    train_loader, val_loader, test_loader = initialize_dataset_and_loader(dataset_path)
+    train_loader, val_loader, test_loader = initialize_dataset_and_loader(dataset_path, True)
+    print("✅ Dataset and loaders initialized successfully!")
 
     # Device configuration
+    print("💻 Configuring device...")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"✅ Device configured to use {'CUDA' if device.type == 'cuda' else 'CPU'}!")
 
     # Model instantiation
+    print("🛠️ Instantiating the model...")
     # model = Model()
     # model.to(device)
+    print("🏗️ Model built and moved to device!")
 
     if args.train:
-        pass
-    
+        print("🏋️ Starting training process...")
+        # Training logic here
+        # print("✅ Training completed!")
+
     if args.test:
-        pass
+        print("🔍 Running tests...")
+        # Testing logic here
+        # print(f"📊 Test Loss: {test_loss}. Test Accuracy: {test_accuracy}")
+        # print("✅ Testing completed!")
 
-        # print(f"test_loss: {test_loss}. test_accuracy: {test_accuracy}")
-
+    print("🎉 Main Function Execution Completed Successfully!")
 
 if __name__ == "__main__":
     # Set up argument parser
