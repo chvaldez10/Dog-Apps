@@ -3,26 +3,22 @@ This script is designed for training and testing a <some> model
 for image recognition tasks.
 
 Command-Line Options:
-  --train : Train the model using the training and validation datasets. This will also save the 
+    --train : Train the model using the training and validation datasets. This will also save the 
             trained model to a specified path. If this option is selected, the script will perform
             training operations including model training and validation.
 
-  --test  : Test the model using the test dataset. This option requires that a trained model is
+    --test  : Test the model using the test dataset. This option requires that a trained model is
             available and specified in the script. If this option is selected, the script will
             perform testing operations and output the performance metrics of the model on the test dataset.
 
-Both options can be used together to first train the model and then test it without needing to run
-the script twice. If no option is specified, the script will not perform any operations.
+    --local  : Create switch to replace folder paths. This is used as a .env alternative.
 
 Examples:
-  To train the model:
-  python your_script_name.py --train
+    To train and then test the model:
+    python your_script_name.py --train --test
 
-  To test the model:
-  python your_script_name.py --test
-
-  To train and then test the model:
-  python your_script_name.py --train --test
+    To add local switch
+    python your_script_name.py --train --local
 
 Note: Ensure that the dataset paths, model save path, and any other configurations are correctly
 set within the script before running it.
