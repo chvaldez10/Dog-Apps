@@ -95,6 +95,13 @@ class DogBreedClassifier(pl.LightningModule):
         loss = F.cross_entropy(outputs, labels)
         self.log("train_loss", loss)
         return loss
+    
+    def validation_step(self, batch, batch_idx):
+        images, labels = batch
+        outputs = self(images)
+        loss = F.cross_entropy(outputs, labels)
+        self.log('val_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        return loss
 
     def configure_optimizers(self):
         # Configure optimizers and optionally learning rate schedulers
@@ -102,7 +109,7 @@ class DogBreedClassifier(pl.LightningModule):
         return optimizer
 
 class DogDataset(Dataset):
-    def __init__(self, root_dir: str, dataset_type: str, transforms=None,) -> None:
+    def __init__(self, root_dir: str, dataset_type: str, transforms=None):
         """
         Initialize the DogDataset.
         
@@ -115,16 +122,24 @@ class DogDataset(Dataset):
         self.transforms = transforms
         self.file_paths = []
         self.labels = []
+        self.label_to_index = {} 
         self._generate_sample()
 
     def _generate_sample(self):
+        label_index = 0
         for label in os.listdir(self.root_dir):
             label_dir = os.path.join(self.root_dir, label)
             if os.path.isdir(label_dir):
+                
+                # Assign an index to each label the first time it's encountered
+                if label not in self.label_to_index:
+                    self.label_to_index[label] = label_index
+                    label_index += 1
+                
                 for file_name in os.listdir(label_dir):
                     if file_name.endswith(".jpg"):
                         self.file_paths.append(os.path.normpath(os.path.join(label_dir, file_name)))
-                        self.labels.append(label)
+                        self.labels.append(label) 
 
     def __len__(self):
         return len(self.file_paths)
@@ -132,12 +147,15 @@ class DogDataset(Dataset):
     def __getitem__(self, idx):
         img_path = self.file_paths[idx]
         image = Image.open(img_path).convert("RGB")  # Convert image to RGB
-        label = self.labels[idx]
+        label = self.labels[idx]  
+
+        # Convert label string to integer index
+        label_index = self.label_to_index[label]
 
         if self.transforms:
             image = self.transforms(image)
 
-        return image, label
+        return image, label_index
 
 class DogBreedDataModule(pl.LightningDataModule):
     def __init__(self, dataset_path: str, batch_size=32):
@@ -221,11 +239,11 @@ def train_dog_breed_classifier(dataset_path: str, save_model_path: str, project_
         callbacks=[model_checkpoint, early_stopping]
     )
 
-    # # Train the model
-    # trainer.fit(model, datamodule=data_module)
+    # Train the model
+    trainer.fit(model, datamodule=data_module)
 
-    # # Optionally, close the wandb run when training is done
-    # wandb_logger.experiment.finish()
+    # Optionally, close the wandb run when training is done
+    wandb_logger.experiment.finish()
 
 # -------------------------------------------------------------------------------- #
 #                                                                                  #
