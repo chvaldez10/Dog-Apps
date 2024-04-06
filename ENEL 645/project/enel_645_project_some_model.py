@@ -38,7 +38,6 @@ import os
 from typing import List, Tuple, Dict
 from itertools import product
 from PIL import Image
-import random
 from datetime import datetime
 import torch.nn as nn
 import torch.nn.functional as F
@@ -47,7 +46,8 @@ import wandb
 
 # Constants
 DATASET_SEGMENTS = ["Train", "Test", "Validation"]
-
+BATCH_SIZE = 32
+NUM_WORKERS = 4
 class DogDataset(Dataset):
     def __init__(self, root_dir: str, dataset_type: str, transforms=None,) -> None:
         """
@@ -117,13 +117,17 @@ def initialize_dataset_and_loader(dataset_path: str) -> Tuple[DataLoader, DataLo
     """
     data_transforms = get_data_transforms()
     
+    # custom dataset
     train_dataset = DogDataset(dataset_path, "Train", data_transforms["Train"])
+    test_dataset = DogDataset(dataset_path, "Test", data_transforms["Test"])
+    val_dataset = DogDataset(dataset_path, "Validation", data_transforms["Validation"])
 
-    print(train_dataset.file_paths[0])
-    print(train_dataset.labels[0])
-    print(train_dataset[0])
+    # dataset loader
+    train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
+    test_loader = DataLoader(dataset=test_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
+    val_loader = DataLoader(dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
 
-    # return train_loader, val_loader, test_loader
+    return train_loader, val_loader, test_loader
 
 # -------------------------------------------------------------------------------- #
 #                                                                                  #
@@ -144,7 +148,7 @@ def main(args):
 
     # Initialize dataset and loader
     initialize_dataset_and_loader(dataset_path)
-    # train_loader, val_loader, test_loader = initialize_dataset_and_loader(dataset_path)
+    train_loader, val_loader, test_loader = initialize_dataset_and_loader(dataset_path)
 
     # Device configuration
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
