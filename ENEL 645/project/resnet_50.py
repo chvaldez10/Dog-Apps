@@ -1,17 +1,14 @@
 """
-This script is designed for training and testing a <some> model
-for image recognition tasks.
+This script is designed for training and testing a ResNet 50 model to classify dog breeds.
 
 Command-Line Options:
     --train : Train the model using the training and validation datasets. This will also save the 
-            trained model to a specified path. If this option is selected, the script will perform
-            training operations including model training and validation.
+            trained model to a specified path.
 
     --test  : Test the model using the test dataset. This option requires that a trained model is
-            available and specified in the script. If this option is selected, the script will
-            perform testing operations and output the performance metrics of the model on the test dataset.
+            available and specified in the script. (not yet implemented)
 
-    --local  : Create switch to replace folder paths. This is used as a .env alternative.
+    --local : Create switch to replace folder paths. This is used as a .env alternative.
 
 Examples:
     To train and then test the model:
@@ -33,6 +30,7 @@ import os
 from PIL import Image
 import torch.nn.functional as F
 import pytorch_lightning as pl
+from torchmetrics import Accuracy
 import torchvision
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
@@ -84,23 +82,42 @@ class DogBreedClassifier(pl.LightningModule):
         in_features = self.base_model.fc.in_features  # Get the input feature size of the original classifier
         self.base_model.fc = torch.nn.Linear(in_features, num_classes)
 
+        # torch metrics accuracy
+        self.train_accuracy = Accuracy(task="multiclass", num_classes=143)
+        self.val_accuracy = Accuracy(task="multiclass", num_classes=143)
+
     def forward(self, x):
         # Forward pass through the modified ResNet-50
         return self.base_model(x)
 
     def training_step(self, batch, batch_idx):
-        # Training step: forward pass and calculate loss
         images, labels = batch
         outputs = self(images)
         loss = F.cross_entropy(outputs, labels)
+
+        # Calculate and log training accuracy
+        preds = torch.argmax(outputs, dim=1)
+        self.train_accuracy.update(preds, labels)
         self.log("train_loss", loss)
+        self.log("train_acc", self.train_accuracy, on_step=False, on_epoch=True, prog_bar=True)
+
         return loss
     
+    def on_train_epoch_end(self):
+        # Optionally, log the train accuracy here if needed and then reset
+        self.log("train_acc_epoch", self.train_accuracy.compute(), prog_bar=True)
+        self.train_accuracy.reset()
+
     def validation_step(self, batch, batch_idx):
         images, labels = batch
         outputs = self(images)
         loss = F.cross_entropy(outputs, labels)
+
+        preds = torch.argmax(outputs, dim=1)
+        self.val_accuracy.update(preds, labels)
         self.log('val_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log('val_acc', self.val_accuracy, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+
         return loss
 
     def configure_optimizers(self):
@@ -185,6 +202,18 @@ class DogBreedDataModule(pl.LightningDataModule):
     def test_dataloader(self):
         return DataLoader(self.test_dataset, batch_size=self.batch_size)
 
+def get_paths(is_local:bool=True) -> list[str, str]:
+    """
+    Determines the dataset and model save paths based on the execution environment.
+    """
+    if is_local:
+        dataset_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/small_dataset/"
+        save_model_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/best_model/"
+    else:
+        dataset_path = "/work/TALC/enel645_2024w/group24/dataset-143-classes/"
+        save_model_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/project/best_model/"
+    return dataset_path, save_model_path
+
 def train_dog_breed_classifier(dataset_path: str, save_model_path: str, project_name: str, max_epochs: int = 10, batch_size: int = 32, use_gpu: bool = True):
     """
     Trains the dog breed classifier model with Weights & Biases logging and device configuration.
@@ -216,10 +245,10 @@ def train_dog_breed_classifier(dataset_path: str, save_model_path: str, project_
     # Setup model checkpointing
     model_checkpoint = ModelCheckpoint(
         dirpath=save_model_path,
-        filename="best-model-{epoch:02d}-{val_loss:.2f}",
-        monitor="val_loss",
+        filename="best-model-{epoch:02d}-{val_acc:.2f}",
+        monitor="val_acc",  # Now monitoring validation accuracy
         save_top_k=1,
-        mode="min",
+        mode="max",  # Changed to 'max' because higher accuracy is better
         verbose=True
     )
 
@@ -255,12 +284,7 @@ def main(args):
     print("🚀 Starting Main Function...\n")
 
     # Paths to the dataset (could be in .env file but its okay)
-    if args.local:
-        dataset_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/small_dataset/"
-        save_model_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/best_model/"
-    else:
-        dataset_path = "/work/TALC/enel645_2024w/group24/dataset-143-classes/"
-        save_model_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/project/best_model/"
+    dataset_path, save_model_path = get_paths(args.local)
     print(f"📂 Dataset and Model paths are set!\nUsing the dataset path from {dataset_path}\nUsing the model path from {save_model_path}")
     print("\n", "=" * 60, "\n")
 
@@ -269,7 +293,7 @@ def main(args):
         train_dog_breed_classifier(
             dataset_path=dataset_path,  # Adjust path
             save_model_path=save_model_path,  # Adjust path
-            project_name="enel 645 project",  # Set your wandb project name
+            project_name="enel 645 project",  # Set wandb project name
             max_epochs=10,
             batch_size=32,
             use_gpu=True

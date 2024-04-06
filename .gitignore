@@ -104,6 +104,7 @@ data/
 *.model
 *.h5
 *.pth
+*.ckpt
 
 # Local configuration file
 .env.local
