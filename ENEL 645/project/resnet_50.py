@@ -21,7 +21,6 @@ Note: Ensure that the dataset paths, model save path, and any other configuratio
 set within the script before running it.
 """
 
-import re
 import torch
 import argparse
 from torch.utils.data import Dataset, DataLoader
@@ -30,11 +29,14 @@ import os
 from PIL import Image
 import torch.nn.functional as F
 import pytorch_lightning as pl
-from torchmetrics import Accuracy
+from torchmetrics import Accuracy, ConfusionMatrix
 import torchvision
 from pytorch_lightning import Trainer
+import seaborn as sns
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
+import matplotlib.pyplot as plt
+import wandb
 
 # Constants
 DATASET_SEGMENTS = ["Train", "Test", "Validation"]
@@ -63,7 +65,7 @@ CUSTOM_TRANSFORM = {
     }
 
 class DogBreedClassifier(pl.LightningModule):
-    def __init__(self, num_classes: int=143):  # Adjust the number of classes if necessary
+    def __init__(self, num_classes: int=143):  # Expected to be 143
         """
         Initialize the DogBreedClassifier.
         
@@ -71,7 +73,7 @@ class DogBreedClassifier(pl.LightningModule):
         - num_classes (int): Set the number of dog breeds where default is 143
         """
         super().__init__()
-        # Load a pretrained ResNet-50 model
+        # Load ResNet-50 model
         self.base_model = torchvision.models.resnet50(weights="ResNet50_Weights.DEFAULT")
 
         # Freeze all layers in the base model
@@ -82,9 +84,13 @@ class DogBreedClassifier(pl.LightningModule):
         in_features = self.base_model.fc.in_features  # Get the input feature size of the original classifier
         self.base_model.fc = torch.nn.Linear(in_features, num_classes)
 
-        # torch metrics accuracy
-        self.train_accuracy = Accuracy(task="multiclass", num_classes=143)
-        self.val_accuracy = Accuracy(task="multiclass", num_classes=143)
+        # Torch metrics accuracy
+        self.train_accuracy = Accuracy(task="multiclass", num_classes=num_classes)
+        self.val_accuracy = Accuracy(task="multiclass", num_classes=num_classes)
+        self.test_accuracy = Accuracy(task="multiclass", num_classes=num_classes)
+
+        # Confusion Matrix for Test
+        self.test_confusion_matrix = ConfusionMatrix(task="multiclass", num_classes=num_classes)
 
     def forward(self, x):
         # Forward pass through the modified ResNet-50
@@ -118,6 +124,35 @@ class DogBreedClassifier(pl.LightningModule):
         self.log('val_acc', self.val_accuracy, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
         return loss
+
+    def test_step(self, batch, batch_idx):
+        images, labels = batch
+        outputs = self(images)
+        loss = F.cross_entropy(outputs, labels)
+
+        predictions = torch.argmax(outputs, dim=1)
+        self.test_accuracy.update(predictions, labels)
+        self.test_confusion_matrix.update(predictions, labels)
+
+        self.log("test_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+        return {"test_loss": loss, "predictions": predictions, "labels": labels}
+
+    def on_test_epoch_end(self):
+        # Log test accuracy
+        self.log("test_acc", self.test_accuracy.compute(), on_step=False, on_epoch=True, prog_bar=True, logger=True)
+
+        # Log confusion matrix
+        confusion_matrix = self.test_confusion_matrix.compute().cpu().numpy()
+        fig, ax = plt.subplots(figsize=(10, 10))
+        sns.heatmap(confusion_matrix, annot=True, fmt="g", ax=ax)
+        ax.set_title("Confusion Matrix")
+        ax.set_xlabel("Predicted Labels")
+        ax.set_ylabel("True Labels")
+        wandb.log({"confusion_matrix": wandb.Image(plt)})
+        plt.close(fig)
+
+        self.test_accuracy.reset()
+        self.test_confusion_matrix.reset()
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
@@ -271,7 +306,9 @@ def train_dog_breed_classifier(dataset_path: str, save_model_path: str, project_
     # Train the model
     trainer.fit(model, datamodule=data_module)
 
-    wandb_logger.experiment.finish()
+    # wandb_logger.experiment.finish()
+
+    return trainer, model
 
 # -------------------------------------------------------------------------------- #
 #                                                                                  #
@@ -289,7 +326,7 @@ def main(args):
 
     if args.train:
         print("🏋️ Starting training process...")
-        train_dog_breed_classifier(
+        trainer, model = train_dog_breed_classifier(
             dataset_path=dataset_path,  # Adjust path
             save_model_path=save_model_path,  # Adjust path
             project_name="enel 645 project",  # Set wandb project name
@@ -298,13 +335,15 @@ def main(args):
             use_gpu=True
         )
         
-        print("✅ Training completed!")
+    print("✅ Training completed!")
     print("\n", "=" * 60, "\n")
 
     if args.test:
         print("🔍 Running tests...")
-        # Testing logic here
-        print("✅ Testing completed!")
+        wandb.init(project="enel 645 project", job_type="test")
+        trainer.test(model, datamodule=DogBreedDataModule(dataset_path=dataset_path, batch_size=32))
+        wandb.finish()
+    print("✅ Testing completed!")
 
     print("🎉 Main Function Execution Completed Successfully!")
 
