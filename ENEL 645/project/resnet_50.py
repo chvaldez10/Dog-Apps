@@ -264,6 +264,7 @@ def train_dog_breed_classifier(dataset_path: str, save_model_path: str, project_
 
     # Configure device usage
     if use_gpu and torch.cuda.is_available():
+        device_count = torch.cuda.device_count()
         print(f"✅ Device configured to use CUDA with {device_count} GPU(s).")
     else:
         device_count = 0
