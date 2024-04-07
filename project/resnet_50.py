@@ -82,7 +82,15 @@ class DogBreedClassifier(pl.LightningModule):
         
         # Replace the classifier layer with a new one for 143 dog breeds
         in_features = self.base_model.fc.in_features  # Get the input feature size of the original classifier
-        self.base_model.fc = torch.nn.Linear(in_features, num_classes)
+        
+        self.classifier = torch.nn.Sequential(
+            torch.nn.Linear(in_features, 256),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(0.3),
+            torch.nn.Linear(256, num_classes)
+        )
+
+        self.base_model.fc = self.classifier
 
         # Torch metrics accuracy
         self.train_accuracy = Accuracy(task="multiclass", num_classes=num_classes)
@@ -93,7 +101,6 @@ class DogBreedClassifier(pl.LightningModule):
         self.test_confusion_matrix = ConfusionMatrix(task="multiclass", num_classes=num_classes)
 
     def forward(self, x):
-        # Forward pass through the modified ResNet-50
         return self.base_model(x)
 
     def training_step(self, batch, batch_idx):
