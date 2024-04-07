@@ -11,5 +11,5 @@
 
 source /home/christian.valdez/software/miniconda3/etc/profile.d/conda.sh
 conda activate calgary_di
-python "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/project/resnet_50.py" --train --test
+python "/home/christian.valdez/ENSF-611-ENEL-645/project/resnet_50.py" --train --test
 conda deactivate

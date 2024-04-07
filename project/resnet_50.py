@@ -81,22 +81,8 @@ class DogBreedClassifier(pl.LightningModule):
             param.requires_grad = False
         
         # Replace the classifier layer with a new one for 143 dog breeds
-        in_features = self.base_model.fc.in_features
-
-        # Extending the classifier with dropout and batch normalization
-        self.classifier = torch.nn.Sequential(
-            torch.nn.Linear(in_features, 1024),
-            torch.nn.BatchNorm1d(1024),
-            torch.nn.ReLU(),
-            torch.nn.Dropout(0.5),
-            torch.nn.Linear(1024, 512),
-            torch.nn.BatchNorm1d(512),
-            torch.nn.ReLU(),
-            torch.nn.Dropout(0.3),
-            torch.nn.Linear(512, num_classes)
-        )
-
-        self.base_model.fc = self.classifier
+        in_features = self.base_model.fc.in_features  # Get the input feature size of the original classifier
+        self.base_model.fc = torch.nn.Linear(in_features, num_classes)
 
         # Torch metrics accuracy
         self.train_accuracy = Accuracy(task="multiclass", num_classes=num_classes)
@@ -169,10 +155,9 @@ class DogBreedClassifier(pl.LightningModule):
         self.test_confusion_matrix.reset()
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=0.001, weight_decay=1e-4)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-        return [optimizer], [scheduler]
-    
+        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        return optimizer
+
 class DogDataset(Dataset):
     def __init__(self, root_dir: str, dataset_type: str, transforms=None):
         """
@@ -252,18 +237,6 @@ class DogBreedDataModule(pl.LightningDataModule):
     def test_dataloader(self):
         return DataLoader(self.test_dataset, batch_size=self.batch_size)
 
-def get_paths(is_local:bool=True) -> list[str, str]:
-    """
-    Determines the dataset and model save paths based on the execution environment.
-    """
-    if is_local:
-        dataset_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/small_dataset/"
-        save_model_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/ENEL 645/project/best_model/"
-    else:
-        dataset_path = "/work/TALC/enel645_2024w/group24/dataset-143-classes/"
-        save_model_path = "/home/christian.valdez/ENSF-611-ENEL-645/ENEL 645/project/best_model/"
-    return dataset_path, save_model_path
-
 def train_dog_breed_classifier(dataset_path: str, save_model_path: str, project_name: str, max_epochs: int = 10, batch_size: int = 32, use_gpu: bool = True):
     """
     Trains the dog breed classifier model with Weights & Biases logging and device configuration.
@@ -326,6 +299,18 @@ def train_dog_breed_classifier(dataset_path: str, save_model_path: str, project_
 
     return trainer, model
 
+def get_paths(is_local:bool=True) -> list[str, str]:
+    """
+    Determines the dataset and model save paths based on the execution environment.
+    """
+    if is_local:
+        dataset_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/project/small_dataset/"
+        save_model_path = "D:/chris/Documents/UofC/MEng Soft/winter/ENEL 645/ENEL 645/project/best_model/"
+    else:
+        dataset_path = "/work/TALC/enel645_2024w/group24/dataset-143-classes/"
+        save_model_path = "/home/christian.valdez/ENSF-611-ENEL-645/project/best_model/"
+    return dataset_path, save_model_path
+
 # -------------------------------------------------------------------------------- #
 #                                                                                  #
 #                               Main Function                                      #
@@ -346,7 +331,7 @@ def main(args):
             dataset_path=dataset_path,  # Adjust path
             save_model_path=save_model_path,  # Adjust path
             project_name="enel 645 project",  # Set wandb project name
-            max_epochs=20,
+            max_epochs=25,
             batch_size=32,
             use_gpu=True
         )
