@@ -196,10 +196,10 @@ def generate_classification_report(checkpoint_path, dataset_path, batch_size=32)
             all_labels.extend(labels.cpu().numpy())
 
     # Generate classification report
-    pd.set_option('display.max_rows', None)  # No limit on the number of rows displayed
-    pd.set_option('display.max_columns', None)  # No limit on the number of columns displayed
-    pd.set_option('display.width', None)  # Automatically determine the display width
-    pd.set_option('display.max_colwidth', None)  # Display full content of each column
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', None)
 
     report = classification_report(all_labels, all_preds, target_names=list(test_dataset.label_to_index.keys()), output_dict=True)
     print(pd.DataFrame(report).transpose())
