@@ -1,0 +1,47 @@
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Ensures container takes up full height of viewport */
+    background-color: #D2C1B0;
+    color: #735E59;
+  }
+  
+  .container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .container form {
+    width: 100%; /* Ensure form takes up full width of container */
+    max-width: 300px; /* Limit form width for better readability */
+  }
+  
+  .container label {
+    margin-bottom: 5px;
+  }
+  
+  .container input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .container input:focus {
+    outline: none;
+    border-color: dodgerblue;
+  }
+  
+  .container span {
+    color: red;
+    margin-top: 5px;
+  }
+  

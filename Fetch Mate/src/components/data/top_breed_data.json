@@ -1,0 +1,68 @@
+{
+  "1": {
+    "breed": "Tibetan",
+    "breedType": "Purebred",
+    "origin": "Canada,USA",
+    "temperament": ["Cheerful", "Gentle", "Friendly", "Intelligent"],
+    "hypoallergenic": "No",
+    "intelligence": 7,
+    "svg_photo": "/images/dog_breeds/tibetan-mastiff-svgrepo-com.svg",
+    "real_photo": "/images/dog_breeds_png/tibetan-mastiff-puppies.png",
+    "summary": "The Tibetan is a purebred known for its cheerful, gentle, friendly, and intelligent temperament. Originating from Canada and the USA, it is not hypoallergenic and ranks 7 in intelligence."
+  },
+  "2": {
+    "popularity": "2",
+    "breed": "Pharaoh Hound",
+    "breedType": "Purebred",
+    "origin": "Egypt",
+    "temperament": ["Friendly", "Docile", "Willful", "Gregarious"],
+    "hypoallergenic": "No",
+    "intelligence": 100,
+    "svg_photo": "/images/dog_breeds/pharaoh-hound-svgrepo-com.svg",
+    "real_photo": "/images/dog_breeds_png/pharaoh-hound-puppies.jpg",
+    "summary": "The Pharaoh Hound is an elegant and ancient breed known for its graceful appearance, intelligence, and affectionate nature. Originating from Malta, where it is the national dog, the Pharaoh Hound is a sighthound with a rich history as a skilled hunter. Characterized by its sleek and muscular build, distinctive 'blush' when excited, and large, expressive ears, the Pharaoh Hound is as striking as it is athletic. Despite its independent streak, the breed forms strong bonds with its family and is known for its loyalty and affection. While not hypoallergenic, the Pharaoh Hound's short coat requires minimal grooming, making it a relatively low-maintenance breed. With proper socialization and training, the Pharaoh Hound can make a loving and devoted companion for active families and individuals who appreciate its unique qualities and heritage."
+  },
+  "3": {
+    "breed": "Pomeranian",
+    "breedType": "Purebred",
+    "origin": "Germany",
+    "temperament": ["Corageous", "Intelligent", "Loyal", "Watchful"],
+    "hypoallergenic": "No",
+    "intelligence": 3,
+    "svg_photo": "/images/dog_breeds/pomeranian-svgrepo-com.svg",
+    "summary": "The Pomeranian is a purebred known for being courageous, intelligent, loyal, and watchful. Originating from Germany, this breed is not hypoallergenic and has an intelligence ranking of 3."
+  },
+  "4": {
+    "popularity": "4",
+    "breed": "Corgi",
+    "breedType": "Purebred",
+    "origin": "United Kingdom",
+    "temperament": ["Intelligent", "Kind", "Friendly", "Confident"],
+    "hypoallergenic": "No",
+    "intelligence": 4,
+    "svg_photo": "/images/dog_breeds/corgi-svgrepo-com.svg",
+    "summary": "The Corgi, a purebred from the United Kingdom, is intelligent, kind, friendly, and confident. It is not hypoallergenic and ranks 4th in intelligence."
+  },
+  "5": {
+    "popularity": "5",
+    "breed": "Akita",
+    "breedType": "Purebred",
+    "origin": "France, UK",
+    "temperament": ["Playful", "Sociable", "Friendly", "Lively", "Patient"],
+    "hypoallergenic": "No",
+    "intelligence": 58,
+    "svg_photo": "/images/dog_breeds/akitas-svgrepo-com.svg",
+    "summary": "The Akita is a playful, sociable, friendly, lively, and patient purebred originating from France and the UK. It is not hypoallergenic, with an intelligence ranking of 58."
+  },
+  "6": {
+    "popularity": "6",
+    "breed": "Bernese",
+    "breedType": "Purebred",
+    "origin": "United Kingdom",
+    "temperament": ["Gentle", "Intelligent", "Even Tempered", "Determined"],
+    "hypoallergenic": "No",
+    "intelligence": 72,
+    "svg_photo": "/images/dog_breeds/bernese-mountain-dog-svgrepo-com.svg",
+    "summary": "The Bernese, a purebred from the United Kingdom, is gentle, intelligent, even-tempered, and determined. It is not hypoallergenic and has a high intelligence ranking of 72."
+  }
+}

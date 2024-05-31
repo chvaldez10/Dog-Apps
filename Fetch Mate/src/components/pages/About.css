@@ -1,0 +1,47 @@
+.about-us-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px;
+  }
+  
+  .about-us-content {
+    flex: 1;
+    max-width: 600px;
+    background-color: #242424;
+    color: #fff;
+    padding: 20px;
+  }
+  
+  .about-us-content h1 {
+    font-size: 36px;
+    color: #fff;
+  }
+  
+  .about-us-content p {
+    font-size: 18px;
+    line-height: 1.6;
+  }
+  
+  .about-us-content ol {
+    margin-top: 20px;
+  }
+  
+  .about-us-content li {
+    list-style-type: decimal;
+    margin-left: 20px;
+  }
+  
+  .about-us-video {
+    flex: 1;
+    display: flex;
+    justify-content: center; /* Horizontally center the video */
+    align-items: center; /* Vertically center the video */
+  }
+  
+  .about-us-video video {
+    max-width: 100%; /* Ensure the video doesn't exceed the column width */
+    max-height: 100%; /* Ensure the video doesn't exceed its container's height */
+    border-radius: 8px;
+  }
+  

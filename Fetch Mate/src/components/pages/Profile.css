@@ -1,0 +1,43 @@
+.profile-container {
+    text-align: center;
+    background-color: #D2C1B0;
+    color: #735E59;
+  }
+  
+  .profile-heading {
+    margin-bottom: 20px;
+  }
+  
+  .sub-heading {
+    margin-bottom: 10px;
+  }
+  
+  .breed-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 80%;
+    height: 600px;
+    margin: 0 auto;
+  }
+  
+  .breed-box {
+    width: 250px;
+    height: 400px;
+    margin-right: 20px;
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .breed-image {
+    width: 200px;
+    height: 350px;
+    object-fit: cover;
+    border-radius: 5px;
+  }
+  
+  .breed-name {
+    margin-top: 10px;
+    color: #735E59;
+  }
+  

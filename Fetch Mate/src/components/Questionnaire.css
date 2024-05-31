@@ -1,0 +1,94 @@
+.questionnaire {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #D2C1B0;
+    color: #735E59;
+}
+
+.question {
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.question p {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.pagination {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+button {
+    background-color: transparent;
+    color: #fff;
+    padding: 8px 20px;
+    border: 1px solid var(--primary);
+    border-radius: 2px;
+    transition: all 0.3s ease-out;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #fff;
+    color: #242424;
+    transition: all 0.3s ease-out;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.option {
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.option.selected {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.options {
+    margin-top: 5px;
+}
+
+.center {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.progress-bar-container {
+    background-color: #f0f0f0;
+    height: 10px;
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #007bff;
+    border-radius: 5px;
+}
+
+.footer {
+    position: fixed; /* Fixed position */
+    bottom: 0; /* Position at the bottom */
+    width: 100%; /* Full width */
+    padding: 20px; /* Adjust padding as needed */
+  }
+  
